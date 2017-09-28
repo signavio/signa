@@ -25,6 +25,8 @@ func loadConfig(file string) map[string]interface{} {
 }
 
 func main() {
+	// NOTE: Add the possibility of use a flag to load the conf
+	// or this way as default.
 	c := loadConfig("/etc/signa.conf")
 	slack.Run(c["slack-token"].(string))
 }
