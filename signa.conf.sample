@@ -1,0 +1,25 @@
+{
+   "bot-username":"signa",
+   "slack-token":"CHANGE-ME",
+   "log":"/var/log/signa.log",
+   "rollback-check":10,
+   "superusers":["superuser1", "superuser2"],
+   "components":[
+      {
+         "name":"app-backend",
+         "repository-uri":"image-repository-uri.com/app-backend",
+         "deployment-config":"/path/to/app-backend.yml",
+         "namespace":"kubernetes-namespace",
+         "exec-users":["user1", "user2"],
+         "alias":"backend"
+      },
+      {
+         "name":"app-frontend",
+         "repository-uri":"image-repository-uri.com/app-frontend",
+         "deployment-config":"/path/to/app-frontend.yml",
+         "namespace":"kubernetes-namespace",
+         "exec-users":["user1", "user2"],
+         "alias":"frontend"
+      }
+   ]
+}
