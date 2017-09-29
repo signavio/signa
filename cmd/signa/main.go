@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 
-	_ "github.com/signavio/signa/ext/gmr"
 	_ "github.com/signavio/signa/ext/kubernetes/deployment"
 	_ "github.com/signavio/signa/ext/kubernetes/get"
 	"github.com/signavio/signa/pkg/slack"
