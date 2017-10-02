@@ -42,11 +42,13 @@ func (b *Bot) MessageReceived(channel *ChannelData, message *Message, sender *Us
 		return
 	}
 
-	switch command.Command {
-	case helpCommand:
-		b.help(command)
-	default:
-		b.handleCmd(command)
+	if command != nil {
+		switch command.Command {
+		case helpCommand:
+			b.help(command)
+		default:
+			b.handleCmd(command)
+		}
 	}
 }
 
