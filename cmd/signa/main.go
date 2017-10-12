@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/signavio/signa/ext/kubernetes/deployment"
 	_ "github.com/signavio/signa/ext/kubernetes/get"
+	_ "github.com/signavio/signa/ext/kubernetes/info"
 	"github.com/signavio/signa/pkg/slack"
 )
 
