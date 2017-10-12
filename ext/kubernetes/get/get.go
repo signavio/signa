@@ -14,33 +14,27 @@ const (
 	invalidParams         = "Invalid parameters"
 )
 
-func checkErrors(e error) {
-	if e != nil {
-		logger.Error.Println(e)
-	}
-}
-
-func extractArgs(args []string) (sl []string) {
-	sl = []string{"get"}
-	for _, a := range args {
-		sl = append(sl, a)
-	}
-
-	return
+func init() {
+	bot.RegisterCommand(
+		"get",
+		"Query resources running in the Kubernetes cluster.",
+		"-n <namespace> pods|services|deployments|namespaces|etc",
+		Get)
 }
 
 func Get(c *bot.Cmd) (string, error) {
 	if len(c.Args) < 1 {
 		return invalidAmountOfParams, nil
 	}
-	a := extractArgs(c.Args)
-	for _, arg := range a {
-		if strings.Contains(arg, "secret") {
+
+	args := parseArgs(c.Args)
+	for _, a := range args {
+		if strings.Contains(a, "secret") {
 			return "not so fast :wink:", nil
 		}
 	}
 
-	k, err := kubectl.NewKubectl("default", a)
+	k, err := kubectl.NewKubectl("default", args)
 	checkErrors(err)
 	o, err := k.Exec()
 	checkErrors(err)
@@ -56,10 +50,17 @@ func Get(c *bot.Cmd) (string, error) {
 	return r, err
 }
 
-func init() {
-	bot.RegisterCommand(
-		"get",
-		"Query resources running in the Kubernetes cluster.",
-		"-n <namespace> pods|services|deployments|namespaces|etc",
-		Get)
+func parseArgs(args []string) (sl []string) {
+	sl = []string{"get"}
+	for _, a := range args {
+		sl = append(sl, a)
+	}
+
+	return
+}
+
+func checkErrors(e error) {
+	if e != nil {
+		logger.Error.Println(e)
+	}
 }
