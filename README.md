@@ -35,6 +35,11 @@ Signa has three main components:
 - [ext](ext/) is where all the native extensions are placed.
 - [pkg](pkg/) is the Signa core libraries and utils.
 
+## TODO
+
+- Add test suite with different test cases.
+- Add in-depth documentation.
+
 ## Maintainers
 
 Stephano Zanzin - [@microwaves](https://github.com/microwaves)
