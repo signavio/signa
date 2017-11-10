@@ -21,5 +21,19 @@
          "exec-users":["user1", "user2"],
          "alias":"frontend"
       }
+   ],
+   "jobs":[
+      {
+         "name":"make-pizza",
+         "config":"/path/to/pizza-job.yml",
+         "namespace":"kubernetes-namespace",
+         "exec-users":["user1", "user2"]
+      },
+      {
+         "name":"make-hamburger",
+         "config":"/path/to/hamburger-job.yml",
+         "namespace":"kubernetes-namespace",
+         "exec-users":["user1", "user2"]
+      }
    ]
 }

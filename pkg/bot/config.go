@@ -14,6 +14,7 @@ type Config struct {
 	RollbackCheck int      `json:"rollback-check"`
 	Superusers    []string `json:"superusers"`
 	Components    []Component
+	Jobs          []Job
 }
 
 type Component struct {
@@ -23,6 +24,13 @@ type Component struct {
 	Namespace       string   `json:"namespace"`
 	ExecUsers       []string `json:"exec-users"`
 	Alias           string   `json:"alias"`
+}
+
+type Job struct {
+	Name      string   `json:"name"`
+	Config    string   `json:"config"`
+	Namespace string   `json:"namespace"`
+	ExecUsers []string `json:"exec-users"`
 }
 
 func (c *Config) Load(file string) error {
@@ -68,8 +76,26 @@ func (c *Config) FindComponent(name string) *Component {
 	return nil
 }
 
+func (c *Config) FindJob(name string) *Job {
+	for _, j := range c.Jobs {
+		if j.Name == name {
+			return &j
+		}
+	}
+	return nil
+}
+
 func (c *Component) IsExecUser(username string) bool {
 	for _, u := range c.ExecUsers {
+		if u == username {
+			return true
+		}
+	}
+	return false
+}
+
+func (j *Job) IsExecUser(username string) bool {
+	for _, u := range j.ExecUsers {
 		if u == username {
 			return true
 		}
