@@ -24,10 +24,27 @@ func (j *Job) createJob() (string, error) {
 func (j *Job) getJobPods() (string, error) {
 	cmd := NewCommand([]string{
 		"get",
-		"po",
+		"pods",
 		"--show-all",
 		"--selector=job-name=" + j.Name,
 		"--output=jsonpath={.items..metadata.name}",
+		"-n",
+		j.Namespace,
+	})
+	output, err := cmd.Exec()
+	if err != nil {
+		return "", err
+	}
+	return output, nil
+}
+
+func (j *Job) getJobState() (string, error) {
+	cmd := NewCommand([]string{
+		"get",
+		"pods",
+		"--show-all",
+		"--selector=job-name=" + j.Name,
+		"--output=jsonpath={.items..status.containerStatuses..reason}",
 		"-n",
 		j.Namespace,
 	})
