@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/signavio/signa/pkg/bot"
 )
@@ -11,6 +12,7 @@ const (
 	jobNotFound           = "Job not found."
 	permissionDenied      = "You are not allowed to execute this operation. :sweat_smile:"
 	errorMessage          = "Something went wrong."
+	jobOutputNotFound     = "Job executed but output not found."
 )
 
 func init() {
@@ -36,25 +38,60 @@ func Run(c *bot.Cmd) (string, error) {
 	username := c.User.Nick
 	if bot.Cfg().IsSuperuser(username) || job.IsExecUser(username) {
 		j := NewJob(job)
-		_, err := j.createJob()
-		if err != nil {
-			return errorMessage, err
-		}
+		status := make(chan string)
+		go execJob(j, status)
 
-		pods, err := j.getJobPods()
-		if err != nil {
-			return errorMessage, err
+		for {
+			if current := <-status; current != "" {
+				return fmt.Sprintf("```%s```", current), nil
+			}
 		}
-
-		logs, err := j.getJobLogs(pods)
-		if err != nil {
-			return errorMessage, err
-		}
-
-		return fmt.Sprintf("```%s```", logs), nil
 	} else {
 		return permissionDenied, nil
 	}
 
-	return "", nil
+	return jobOutputNotFound, nil
+}
+
+func execJob(j *Job, status chan string) {
+	if _, err := j.createJob(); err != nil {
+		log.Print(err)
+		status <- errorMessage
+		return
+	}
+
+	pods, err := j.getJobPods()
+	if err != nil {
+		log.Print(err)
+		status <- errorMessage
+		return
+	}
+
+	for {
+		state, err := j.getJobState()
+		if err != nil {
+			log.Print(err)
+			status <- errorMessage
+			return
+		}
+
+		if state == "Completed" {
+			logs, err := j.getJobLogs(pods)
+			if err != nil {
+				log.Print(err)
+				status <- errorMessage
+				return
+			}
+			status <- logs
+			break
+		}
+	}
+
+	if _, err := j.deleteJob(); err != nil {
+		log.Print(err)
+		status <- errorMessage
+		return
+	}
+
+	close(status)
 }
