@@ -56,7 +56,7 @@ func (j *Job) getJobState() (string, error) {
 }
 
 func (j *Job) getJobLogs(pods string) (string, error) {
-	cmd := NewCommand([]string{"logs", pods, "-n", j.Namespace})
+	cmd := NewCommand([]string{"logs", pods, "--tail=20", "-n", j.Namespace})
 	output, err := cmd.Exec()
 	if err != nil {
 		return "", err
