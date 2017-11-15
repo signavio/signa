@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/signavio/signa/pkg/bot"
 )
@@ -11,7 +10,7 @@ const (
 	invalidAmountOfParams = "Invalid amount of parameters"
 	jobNotFound           = "Job not found."
 	permissionDenied      = "You are not allowed to execute this operation. :sweat_smile:"
-	errorMessage          = "Something went wrong."
+	errorMessage          = "Something went wrong"
 	jobOutputNotFound     = "Job executed but output not found."
 )
 
@@ -37,9 +36,20 @@ func Run(c *bot.Cmd) (string, error) {
 	// TODO: Implement check in a global level.
 	username := c.User.Nick
 	if bot.Cfg().IsSuperuser(username) || job.IsExecUser(username) {
-		j := NewJob(job)
+		var j *Job
+		if len(c.Args) == 2 {
+			j = NewJob(job, c.Args[1])
+		} else {
+			j = NewJob(job, "")
+		}
+
+		err := j.parseImageTag()
+		if err != nil {
+			return errorMessage, err
+		}
+
 		status := make(chan string)
-		go execJob(j, status)
+		go j.exec(status)
 
 		for {
 			if current := <-status; current != "" {
@@ -51,47 +61,4 @@ func Run(c *bot.Cmd) (string, error) {
 	}
 
 	return jobOutputNotFound, nil
-}
-
-func execJob(j *Job, status chan string) {
-	if _, err := j.createJob(); err != nil {
-		log.Print(err)
-		status <- errorMessage
-		return
-	}
-
-	pods, err := j.getJobPods()
-	if err != nil {
-		log.Print(err)
-		status <- errorMessage
-		return
-	}
-
-	for {
-		state, err := j.getJobState()
-		if err != nil {
-			log.Print(err)
-			status <- errorMessage
-			return
-		}
-
-		if state == "Completed" {
-			logs, err := j.getJobLogs(pods)
-			if err != nil {
-				log.Print(err)
-				status <- errorMessage
-				return
-			}
-			status <- logs
-			break
-		}
-	}
-
-	if _, err := j.deleteJob(); err != nil {
-		log.Print(err)
-		status <- errorMessage
-		return
-	}
-
-	close(status)
 }

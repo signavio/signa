@@ -1,15 +1,68 @@
 package jobs
 
 import (
+	"html/template"
+	"log"
+	"os"
+
 	"github.com/signavio/signa/pkg/bot"
 )
 
 type Job struct {
 	*bot.Job
+	ImageTag string
 }
 
-func NewJob(j *bot.Job) *Job {
-	return &Job{j}
+func NewJob(j *bot.Job, imageTag string) *Job {
+	return &Job{j, imageTag}
+}
+
+func (j *Job) exec(status chan string) {
+	if _, err := j.createJob(); err != nil {
+		log.Print(err)
+		status <- errorMessage
+		return
+	}
+
+	pods, err := j.getJobPods()
+	if err != nil {
+		log.Print(err)
+		status <- errorMessage
+		return
+	}
+
+	for {
+		state, err := j.getJobState()
+		if err != nil {
+			log.Print(err)
+			status <- errorMessage
+			break
+		}
+
+		if state == "Completed" {
+			logs, err := j.getJobLogs(pods)
+			if err != nil {
+				log.Print(err)
+				status <- errorMessage
+				break
+			}
+			status <- logs
+			break
+		} else if state == "ErrImagePull" {
+			log.Print(err)
+			status <- errorMessage + ": " + state
+			break
+		}
+		// TODO: Implement error condition.
+	}
+
+	if _, err := j.deleteJob(); err != nil {
+		log.Print(err)
+		status <- errorMessage
+		return
+	}
+
+	close(status)
 }
 
 func (j *Job) createJob() (string, error) {
@@ -71,4 +124,26 @@ func (j *Job) deleteJob() (string, error) {
 		return "", err
 	}
 	return output, nil
+}
+
+func (j *Job) parseImageTag() error {
+	t, err := template.ParseFiles(j.Config)
+	if err != nil {
+		return err
+	}
+
+	parsedCfg := j.Config + ".parsed"
+	f, err := os.Create(parsedCfg)
+	if err != nil {
+		return err
+	}
+
+	err = t.Execute(f, j)
+	if err != nil {
+		return err
+	}
+
+	j.Config = parsedCfg
+
+	return nil
 }
