@@ -24,13 +24,6 @@ func (j *Job) exec(status chan string) {
 		return
 	}
 
-	pods, err := j.getJobPods()
-	if err != nil {
-		log.Print(err)
-		status <- errorMessage
-		return
-	}
-
 	for {
 		state, err := j.getJobState()
 		if err != nil {
@@ -39,8 +32,8 @@ func (j *Job) exec(status chan string) {
 			break
 		}
 
-		if state == "Completed" {
-			logs, err := j.getJobLogs(pods)
+		if state == "Completed" || state == "Error" {
+			logs, err := j.getJobLogs()
 			if err != nil {
 				log.Print(err)
 				status <- errorMessage
@@ -53,7 +46,6 @@ func (j *Job) exec(status chan string) {
 			status <- errorMessage + ": " + state
 			break
 		}
-		// TODO: Implement error condition.
 	}
 
 	if _, err := j.deleteJob(); err != nil {
@@ -67,23 +59,6 @@ func (j *Job) exec(status chan string) {
 
 func (j *Job) createJob() (string, error) {
 	cmd := NewCommand([]string{"create", "-f", j.Config, "-n", j.Namespace})
-	output, err := cmd.Exec()
-	if err != nil {
-		return "", err
-	}
-	return output, nil
-}
-
-func (j *Job) getJobPods() (string, error) {
-	cmd := NewCommand([]string{
-		"get",
-		"pods",
-		"--show-all",
-		"--selector=job-name=" + j.Name,
-		"--output=jsonpath={.items..metadata.name}",
-		"-n",
-		j.Namespace,
-	})
 	output, err := cmd.Exec()
 	if err != nil {
 		return "", err
@@ -108,8 +83,31 @@ func (j *Job) getJobState() (string, error) {
 	return output, nil
 }
 
-func (j *Job) getJobLogs(pods string) (string, error) {
+func (j *Job) getJobLogs() (string, error) {
+	pods, err := j.getJobPods()
+	if err != nil {
+		return "", err
+	}
+
 	cmd := NewCommand([]string{"logs", pods, "--tail=20", "-n", j.Namespace})
+	output, err := cmd.Exec()
+	if err != nil {
+		return "", err
+	}
+
+	return output, nil
+}
+
+func (j *Job) getJobPods() (string, error) {
+	cmd := NewCommand([]string{
+		"get",
+		"pods",
+		"--show-all",
+		"--selector=job-name=" + j.Name,
+		"--output=jsonpath={.items..metadata.name}",
+		"-n",
+		j.Namespace,
+	})
 	output, err := cmd.Exec()
 	if err != nil {
 		return "", err
