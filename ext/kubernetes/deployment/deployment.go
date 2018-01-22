@@ -22,6 +22,7 @@ var k8sErrorStatuses = []string{
 
 type Deployment struct {
 	Name          string
+	Kubeconfig    string
 	Namespace     string
 	ContainerName string
 	RepositoryURI string
@@ -32,6 +33,7 @@ type Deployment struct {
 func NewDeployment(component *bot.Component, container *bot.Container, version string) *Deployment {
 	return &Deployment{
 		Name:          component.Name,
+		Kubeconfig:    component.Kubeconfig,
 		Namespace:     component.Namespace,
 		ContainerName: container.Name,
 		RepositoryURI: container.RepositoryURI,
@@ -42,10 +44,15 @@ func NewDeployment(component *bot.Component, container *bot.Container, version s
 
 func (d *Deployment) Apply() (bool, error) {
 	deploymentName := fmt.Sprintf("deployment/%v", d.Name)
-	currentDeployment, _ := executeKubectlCmd(d.Namespace, "get", deploymentName)
+	currentDeployment, _ := executeKubectlCmd(
+		d.Kubeconfig,
+		d.Namespace,
+		"get",
+		deploymentName,
+	)
 
 	if strings.Contains(currentDeployment, "NotFound") {
-		_, err := executeKubectlCmd(d.Namespace, "create", "-f", d.Config)
+		_, err := executeKubectlCmd(d.Kubeconfig, d.Namespace, "create", "-f", d.Config)
 		if err != nil {
 			return false, err
 		}
@@ -54,7 +61,7 @@ func (d *Deployment) Apply() (bool, error) {
 	} else {
 		image := fmt.Sprintf("%v=%v:%v", d.ContainerName, d.RepositoryURI, d.Version)
 
-		_, err := executeKubectlCmd(d.Namespace, "set", "image", deploymentName, image)
+		_, err := executeKubectlCmd(d.Kubeconfig, d.Namespace, "set", "image", deploymentName, image)
 		if err != nil {
 			bot.LogError(err)
 			return false, err
@@ -68,7 +75,7 @@ func (d *Deployment) Apply() (bool, error) {
 }
 
 func (d *Deployment) GetPods() []string {
-	pods := NewPods(d.Namespace)
+	pods := NewPods(d.Kubeconfig, d.Namespace)
 	deployedPods := []string{}
 	for _, p := range pods.Items {
 		if strings.Contains(p.Metadata.Name, d.Name) {
@@ -81,7 +88,7 @@ func (d *Deployment) GetPods() []string {
 
 func (d *Deployment) rollbackInCaseOfError() (bool, error) {
 	if !d.isDeploySuccessful() {
-		_, err := executeKubectlCmd(d.Namespace, "rollout", "undo", "deployment", d.Name)
+		_, err := executeKubectlCmd(d.Kubeconfig, d.Namespace, "rollout", "undo", "deployment", d.Name)
 		if err != nil {
 			bot.LogError(err)
 			return false, err
@@ -107,6 +114,7 @@ func (d *Deployment) isDeploySuccessful() bool {
 func (d *Deployment) getDeploymentStatus() string {
 	pods := d.GetPods()
 	execOutput, err := executeKubectlCmd(
+		d.Kubeconfig,
 		d.Namespace,
 		"get",
 		"pod",
