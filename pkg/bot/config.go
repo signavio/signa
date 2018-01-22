@@ -21,16 +21,18 @@ type Component struct {
 	Name            string `json:"name"`
 	Containers      []Container
 	BootstrapConfig string   `json:"bootstrap-config"`
+	Kubeconfig      string   `json:"kubeconfig"`
 	Namespace       string   `json:"namespace"`
 	ExecUsers       []string `json:"exec-users"`
 	Alias           string   `json:"alias"`
 }
 
 type Job struct {
-	Name      string   `json:"name"`
-	Config    string   `json:"config"`
-	Namespace string   `json:"namespace"`
-	ExecUsers []string `json:"exec-users"`
+	Name       string   `json:"name"`
+	Config     string   `json:"config"`
+	Kubeconfig string   `json:"kubeconfig"`
+	Namespace  string   `json:"namespace"`
+	ExecUsers  []string `json:"exec-users"`
 }
 
 type Container struct {
