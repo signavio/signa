@@ -17,13 +17,13 @@ type Pod struct {
 	} `json:"metadata"`
 }
 
-func NewPods(namespace string) (p *Pods) {
+func NewPods(kubeconfig, namespace string) (p *Pods) {
 	p = &Pods{}
-	p.ParseFromKubectlOutput(namespace)
+	p.ParseFromKubectlOutput(kubeconfig, namespace)
 	return
 }
 
-func (p *Pods) ParseFromKubectlOutput(namespace string) error {
+func (p *Pods) ParseFromKubectlOutput(kubeconfig, namespace string) error {
 	execOutput, err := executeKubectlCmd(
 		namespace,
 		"get",
