@@ -23,16 +23,18 @@ var k8sErrorStatuses = []string{
 type Deployment struct {
 	Name          string
 	Namespace     string
+	ContainerName string
 	RepositoryURI string
 	Version       string
 	Config        string
 }
 
-func NewDeployment(component *bot.Component, version string) *Deployment {
+func NewDeployment(component *bot.Component, container *bot.Container, version string) *Deployment {
 	return &Deployment{
 		Name:          component.Name,
 		Namespace:     component.Namespace,
-		RepositoryURI: component.RepositoryURI,
+		ContainerName: container.Name,
+		RepositoryURI: container.RepositoryURI,
 		Version:       version,
 		Config:        component.BootstrapConfig,
 	}
@@ -50,7 +52,7 @@ func (d *Deployment) Apply() (bool, error) {
 
 		return false, nil
 	} else {
-		image := fmt.Sprintf("%v=%v:%v", d.Name, d.RepositoryURI, d.Version)
+		image := fmt.Sprintf("%v=%v:%v", d.ContainerName, d.RepositoryURI, d.Version)
 
 		_, err := executeKubectlCmd(d.Namespace, "set", "image", deploymentName, image)
 		if err != nil {

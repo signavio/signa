@@ -18,8 +18,8 @@ type Config struct {
 }
 
 type Component struct {
-	Name            string   `json:"name"`
-	RepositoryURI   string   `json:"repository-uri"`
+	Name            string `json:"name"`
+	Containers      []Container
 	BootstrapConfig string   `json:"bootstrap-config"`
 	Namespace       string   `json:"namespace"`
 	ExecUsers       []string `json:"exec-users"`
@@ -31,6 +31,11 @@ type Job struct {
 	Config    string   `json:"config"`
 	Namespace string   `json:"namespace"`
 	ExecUsers []string `json:"exec-users"`
+}
+
+type Container struct {
+	Name          string `json:"name"`
+	RepositoryURI string `json:"repository-uri"`
 }
 
 func (c *Config) Load(file string) error {
@@ -80,6 +85,15 @@ func (c *Config) FindJob(name string) *Job {
 	for _, j := range c.Jobs {
 		if j.Name == name {
 			return &j
+		}
+	}
+	return nil
+}
+
+func (c *Component) FindContainer(name string) *Container {
+	for _, cont := range c.Containers {
+		if cont.Name == name {
+			return &cont
 		}
 	}
 	return nil
