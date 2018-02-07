@@ -30,10 +30,10 @@ type Deployment struct {
 	Config        string
 }
 
-func NewDeployment(component *bot.Component, container *bot.Container, version string) *Deployment {
+func NewDeployment(component *bot.Component, container *bot.Container, cluster *bot.Cluster, version string) *Deployment {
 	return &Deployment{
 		Name:          component.Name,
-		Kubeconfig:    component.Kubeconfig,
+		Kubeconfig:    cluster.Kubeconfig,
 		Namespace:     component.Namespace,
 		ContainerName: container.Name,
 		RepositoryURI: container.RepositoryURI,
@@ -44,12 +44,15 @@ func NewDeployment(component *bot.Component, container *bot.Container, version s
 
 func (d *Deployment) Apply() (bool, error) {
 	deploymentName := fmt.Sprintf("deployment/%v", d.Name)
-	currentDeployment, _ := executeKubectlCmd(
+	currentDeployment, err := executeKubectlCmd(
 		d.Kubeconfig,
 		d.Namespace,
 		"get",
 		deploymentName,
 	)
+	if err != nil {
+		return false, err
+	}
 
 	if strings.Contains(currentDeployment, "NotFound") {
 		_, err := executeKubectlCmd(d.Kubeconfig, d.Namespace, "create", "-f", d.Config)
