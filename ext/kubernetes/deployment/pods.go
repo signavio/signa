@@ -25,13 +25,10 @@ func NewPods(kubeconfig, namespace string) (p *Pods) {
 
 func (p *Pods) ParseFromKubectlOutput(kubeconfig, namespace string) error {
 	execOutput, err := executeKubectlCmd(
+		kubeconfig,
 		namespace,
 		"get",
 		"pods",
-		// NOTE: kubectl has a bug on this parameter. It's broken on the 1.7.x
-		// and it should be fixed in the next minor version upgrade as the
-		// issue got merged recently. 1.6.8 is fine though.
-		// https://github.com/kubernetes/kubernetes/pull/48659
 		"--sort-by=.metadata.creationTimestamp",
 		"-o",
 		"json",
