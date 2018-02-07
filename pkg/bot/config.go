@@ -19,23 +19,31 @@ type Config struct {
 
 type Component struct {
 	Name            string `json:"name"`
+	Clusters        []Cluster
 	Containers      []Container
 	BootstrapConfig string   `json:"bootstrap-config"`
+	Kubeconfig      string   `json:"kubeconfig"`
 	Namespace       string   `json:"namespace"`
 	ExecUsers       []string `json:"exec-users"`
 	Alias           string   `json:"alias"`
 }
 
 type Job struct {
-	Name      string   `json:"name"`
-	Config    string   `json:"config"`
-	Namespace string   `json:"namespace"`
-	ExecUsers []string `json:"exec-users"`
+	Name       string   `json:"name"`
+	Config     string   `json:"config"`
+	Kubeconfig string   `json:"kubeconfig"`
+	Namespace  string   `json:"namespace"`
+	ExecUsers  []string `json:"exec-users"`
 }
 
 type Container struct {
 	Name          string `json:"name"`
 	RepositoryURI string `json:"repository-uri"`
+}
+
+type Cluster struct {
+	Name       string `json:"name"`
+	Kubeconfig string `json:"kubeconfig"`
 }
 
 func (c *Config) Load(file string) error {
@@ -94,6 +102,15 @@ func (c *Component) FindContainer(name string) *Container {
 	for _, cont := range c.Containers {
 		if cont.Name == name {
 			return &cont
+		}
+	}
+	return nil
+}
+
+func (c *Component) FindCluster(name string) *Cluster {
+	for _, cluster := range c.Clusters {
+		if cluster.Name == name {
+			return &cluster
 		}
 	}
 	return nil

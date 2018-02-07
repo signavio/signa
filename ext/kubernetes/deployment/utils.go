@@ -9,8 +9,8 @@ import (
 	"github.com/signavio/signa/pkg/kubectl"
 )
 
-func executeKubectlCmd(namespace string, args ...string) (string, error) {
-	baseArgs := []string{"-n", namespace}
+func executeKubectlCmd(kubeconfig, namespace string, args ...string) (string, error) {
+	baseArgs := []string{"--kubeconfig=" + kubeconfig, "-n", namespace}
 	kubectlArgs := append(baseArgs, args...)
 
 	k, err := kubectl.NewKubectl("default", kubectlArgs)

@@ -16,6 +16,7 @@ const (
 	invalidParams         = "Invalid parameters"
 	componentNotFound     = "Component not found."
 	containerNotFound     = "Container not found."
+	clusterNotFound       = "Cluster not found."
 	deployInfo            = "Deploying the image tag `%v` from `%v`. It may take several seconds."
 	deployErrors          = "Some errors occurred :thinking_face:. Please, check the logs and try again in a few moments."
 	rollbackExecuted      = "Problems identified during the deployment, the rollback was executed successfully."
@@ -48,10 +49,14 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 	if container == nil {
 		return containerNotFound, nil
 	}
+	cluster := component.FindCluster(botCommand.Args[2])
+	if cluster == nil {
+		return clusterNotFound, nil
+	}
 
 	username := botCommand.User.Nick
 	if bot.Cfg().IsSuperuser(username) || component.IsExecUser(username) {
-		deployment := NewDeployment(component, container, botCommand.Args[2])
+		deployment := NewDeployment(component, container, cluster, botCommand.Args[3])
 		err := postMessageToSlackChannel(
 			botCommand.Channel,
 			fmt.Sprintf(
