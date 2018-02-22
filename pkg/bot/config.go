@@ -29,7 +29,8 @@ type Component struct {
 }
 
 type Job struct {
-	Name       string   `json:"name"`
+	Name       string `json:"name"`
+	Clusters   []Cluster
 	Config     string   `json:"config"`
 	Kubeconfig string   `json:"kubeconfig"`
 	Namespace  string   `json:"namespace"`
@@ -132,4 +133,13 @@ func (j *Job) IsExecUser(username string) bool {
 		}
 	}
 	return false
+}
+
+func (j *Job) FindCluster(name string) *Cluster {
+	for _, cluster := range j.Clusters {
+		if cluster.Name == name {
+			return &cluster
+		}
+	}
+	return nil
 }
