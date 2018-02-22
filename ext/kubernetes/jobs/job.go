@@ -17,15 +17,15 @@ func NewJob(j *bot.Job, imageTag string) *Job {
 	return &Job{j, imageTag}
 }
 
-func (j *Job) exec(status chan string) {
-	if _, err := j.createJob(); err != nil {
+func (j *Job) exec(kubeconfig string, status chan string) {
+	if _, err := j.createJob(kubeconfig); err != nil {
 		log.Print(err)
 		status <- errorMessage
 		return
 	}
 
 	for {
-		state, err := j.getJobState()
+		state, err := j.getJobState(kubeconfig)
 		if err != nil {
 			log.Print(err)
 			status <- errorMessage
@@ -33,7 +33,7 @@ func (j *Job) exec(status chan string) {
 		}
 
 		if state == "Completed" || state == "Error" {
-			logs, err := j.getJobLogs()
+			logs, err := j.getJobLogs(kubeconfig)
 			if err != nil {
 				log.Print(err)
 				status <- errorMessage
@@ -48,7 +48,7 @@ func (j *Job) exec(status chan string) {
 		}
 	}
 
-	if _, err := j.deleteJob(); err != nil {
+	if _, err := j.deleteJob(kubeconfig); err != nil {
 		log.Print(err)
 		status <- errorMessage
 		return
@@ -57,8 +57,15 @@ func (j *Job) exec(status chan string) {
 	close(status)
 }
 
-func (j *Job) createJob() (string, error) {
-	cmd := NewCommand([]string{"create", "-f", j.Config, "-n", j.Namespace})
+func (j *Job) createJob(kubeconfig string) (string, error) {
+	cmd := NewCommand([]string{
+		"--kubeconfig=" + kubeconfig,
+		"create",
+		"-f",
+		j.Config,
+		"-n",
+		j.Namespace,
+	})
 	output, err := cmd.Exec()
 	if err != nil {
 		return "", err
@@ -66,8 +73,9 @@ func (j *Job) createJob() (string, error) {
 	return output, nil
 }
 
-func (j *Job) getJobState() (string, error) {
+func (j *Job) getJobState(kubeconfig string) (string, error) {
 	cmd := NewCommand([]string{
+		"--kubeconfig=" + kubeconfig,
 		"get",
 		"pods",
 		"--show-all",
@@ -83,13 +91,20 @@ func (j *Job) getJobState() (string, error) {
 	return output, nil
 }
 
-func (j *Job) getJobLogs() (string, error) {
-	pods, err := j.getJobPods()
+func (j *Job) getJobLogs(kubeconfig string) (string, error) {
+	pods, err := j.getJobPods(kubeconfig)
 	if err != nil {
 		return "", err
 	}
 
-	cmd := NewCommand([]string{"logs", pods, "--tail=20", "-n", j.Namespace})
+	cmd := NewCommand([]string{
+		"--kubeconfig=" + kubeconfig,
+		"logs",
+		pods,
+		"--tail=20",
+		"-n",
+		j.Namespace,
+	})
 	output, err := cmd.Exec()
 	if err != nil {
 		return "", err
@@ -98,8 +113,9 @@ func (j *Job) getJobLogs() (string, error) {
 	return output, nil
 }
 
-func (j *Job) getJobPods() (string, error) {
+func (j *Job) getJobPods(kubeconfig string) (string, error) {
 	cmd := NewCommand([]string{
+		"--kubeconfig=" + kubeconfig,
 		"get",
 		"pods",
 		"--show-all",
@@ -115,8 +131,15 @@ func (j *Job) getJobPods() (string, error) {
 	return output, nil
 }
 
-func (j *Job) deleteJob() (string, error) {
-	cmd := NewCommand([]string{"delete", "-f", j.Config, "-n", j.Namespace})
+func (j *Job) deleteJob(kubeconfig string) (string, error) {
+	cmd := NewCommand([]string{
+		"--kubeconfig=" + kubeconfig,
+		"delete",
+		"-f",
+		j.Config,
+		"-n",
+		j.Namespace,
+	})
 	output, err := cmd.Exec()
 	if err != nil {
 		return "", err

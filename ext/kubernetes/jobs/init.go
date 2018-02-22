@@ -9,6 +9,7 @@ import (
 const (
 	invalidAmountOfParams = "Invalid amount of parameters"
 	jobNotFound           = "Job not found."
+	clusterNotFound       = "Cluster not found."
 	permissionDenied      = "You are not allowed to execute this operation. :sweat_smile:"
 	errorMessage          = "Something went wrong"
 	jobOutputNotFound     = "Job executed but output not found."
@@ -18,7 +19,7 @@ func init() {
 	bot.RegisterCommand(
 		"run",
 		"Run kubernetes jobs.",
-		"<job-name>",
+		"<cluster-name> <job-name>",
 		Run,
 	)
 }
@@ -31,6 +32,10 @@ func Run(c *bot.Cmd) (string, error) {
 	job := bot.Cfg().FindJob(c.Args[0])
 	if job == nil {
 		return jobNotFound, nil
+	}
+	cluster := job.FindCluster(c.Args[2])
+	if cluster == nil {
+		return clusterNotFound, nil
 	}
 
 	// TODO: Implement check in a global level.
@@ -49,7 +54,7 @@ func Run(c *bot.Cmd) (string, error) {
 		}
 
 		status := make(chan string)
-		go j.exec(status)
+		go j.exec(cluster.Kubeconfig, status)
 
 		for {
 			if current := <-status; current != "" {
