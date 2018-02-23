@@ -19,7 +19,7 @@ func init() {
 	bot.RegisterCommand(
 		"run",
 		"Run kubernetes jobs.",
-		"<cluster-name> <job-name>",
+		"<job-name> <cluster-name> <image-tag>",
 		Run,
 	)
 }
