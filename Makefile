@@ -1,5 +1,5 @@
 BIN_NAME = signa
-CURRENT_TAG := $(shell git describe --tags | sed -e 's/^v//')
+CURRENT_TAG := $(shell git describe --tags | sed -e 's/^v//' | sed -e 's/\-.*//')
 ARCH = amd64
 BUILD_ENTRYPOINT = cmd/signa/main.go
 
