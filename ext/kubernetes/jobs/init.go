@@ -33,7 +33,7 @@ func Run(c *bot.Cmd) (string, error) {
 	if job == nil {
 		return jobNotFound, nil
 	}
-	cluster := job.FindCluster(c.Args[2])
+	cluster := job.FindCluster(c.Args[1])
 	if cluster == nil {
 		return clusterNotFound, nil
 	}
@@ -42,8 +42,8 @@ func Run(c *bot.Cmd) (string, error) {
 	username := c.User.Nick
 	if bot.Cfg().IsSuperuser(username) || job.IsExecUser(username) {
 		var j *Job
-		if len(c.Args) == 2 {
-			j = NewJob(job, c.Args[1])
+		if len(c.Args) == 3 {
+			j = NewJob(job, c.Args[2])
 		} else {
 			j = NewJob(job, "")
 		}
