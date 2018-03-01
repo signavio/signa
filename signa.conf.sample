@@ -7,8 +7,23 @@
    "components":[
       {
          "name":"app-backend",
-         "repository-uri":"image-repository-uri.com/app-backend",
-         "deployment-config":"/path/to/app-backend.yml",
+         "clusters": [
+           {
+             "name": "cluster1",
+             "kubeconfig": "/path/to/cluster1-kubeconfig"
+           },
+           {
+             "name": "cluster2",
+             "kubeconfig": "/path/to/cluster2-kubeconfig"
+           }
+         ],
+         "containers": [
+           {
+             "name": "pex-backend",
+             "repository-uri":"image-repository-uri.com/app-backend"
+           }
+         ],
+         "bootstrap-config":"/path/to/app-backend.yml",
          "namespace":"kubernetes-namespace",
          "exec-users":["user1", "user2"],
          "alias":"backend"
@@ -25,12 +40,32 @@
    "jobs":[
       {
          "name":"make-pizza",
+         "clusters": [
+           {
+             "name": "cluster1",
+             "kubeconfig": "/path/to/cluster1-kubeconfig"
+           },
+           {
+             "name": "cluster2",
+             "kubeconfig": "/path/to/cluster2-kubeconfig"
+           }
+         ],
          "config":"/path/to/pizza-job.yml",
          "namespace":"kubernetes-namespace",
          "exec-users":["user1", "user2"]
       },
       {
          "name":"make-hamburger",
+         "clusters": [
+           {
+             "name": "cluster1",
+             "kubeconfig": "/path/to/cluster1-kubeconfig"
+           },
+           {
+             "name": "cluster2",
+             "kubeconfig": "/path/to/cluster2-kubeconfig"
+           }
+         ],
          "config":"/path/to/hamburger-job.yml",
          "namespace":"kubernetes-namespace",
          "exec-users":["user1", "user2"]
