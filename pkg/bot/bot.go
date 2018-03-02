@@ -82,7 +82,7 @@ func Cfg() *Config {
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
-	if err := cfg.Load("/etc/signa.conf"); err != nil {
+	if err := cfg.Load("/etc/signa.yaml"); err != nil {
 		panic(err)
 	}
 	if err := setupLogger(); err != nil {

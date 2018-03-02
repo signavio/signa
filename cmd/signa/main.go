@@ -1,8 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"os"
+
+	yaml "gopkg.in/yaml.v2"
 
 	_ "github.com/signavio/signa/ext/kubernetes/deployment"
 	_ "github.com/signavio/signa/ext/kubernetes/get"
@@ -10,6 +11,13 @@ import (
 	_ "github.com/signavio/signa/ext/kubernetes/jobs"
 	"github.com/signavio/signa/pkg/slack"
 )
+
+func main() {
+	// NOTE: Add the possibility of use a flag to load the conf
+	// or this way as default.
+	c := loadConfig("/etc/signa.yaml")
+	slack.Run(c["slack-token"].(string))
+}
 
 func loadConfig(file string) map[string]interface{} {
 	f, err := os.Open(file)
@@ -19,15 +27,8 @@ func loadConfig(file string) map[string]interface{} {
 	}
 
 	var c map[string]interface{}
-	d := json.NewDecoder(f)
+	d := yaml.NewDecoder(f)
 	d.Decode(&c)
 
 	return c
-}
-
-func main() {
-	// NOTE: Add the possibility of use a flag to load the conf
-	// or this way as default.
-	c := loadConfig("/etc/signa.conf")
-	slack.Run(c["slack-token"].(string))
 }
