@@ -1,50 +1,51 @@
 package bot
 
 import (
-	"encoding/json"
 	"os"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 var cfg = &Config{}
 
 type Config struct {
-	BotUsername   string   `json:"bot-username"`
-	SlackToken    string   `json:"slack-token"`
-	Log           string   `json:"log"`
-	RollbackCheck int      `json:"rollback-check"`
-	Superusers    []string `json:"superusers"`
+	BotUsername   string   `yaml:"bot-username"`
+	SlackToken    string   `yaml:"slack-token"`
+	Log           string   `yaml:"log"`
+	RollbackCheck int      `yaml:"rollback-check"`
+	Superusers    []string `yaml:"superusers"`
 	Components    []Component
 	Jobs          []Job
 }
 
 type Component struct {
-	Name            string `json:"name"`
+	Name            string `yaml:"name"`
 	Clusters        []Cluster
 	Containers      []Container
-	BootstrapConfig string   `json:"bootstrap-config"`
-	Kubeconfig      string   `json:"kubeconfig"`
-	Namespace       string   `json:"namespace"`
-	ExecUsers       []string `json:"exec-users"`
-	Alias           string   `json:"alias"`
+	BootstrapConfig string   `yaml:"bootstrap-config"`
+	Kubeconfig      string   `yaml:"kubeconfig"`
+	Namespace       string   `yaml:"namespace"`
+	ExecUsers       []string `yaml:"exec-users"`
+	Alias           string   `yaml:"alias"`
 }
 
 type Job struct {
-	Name       string `json:"name"`
+	Name       string `yaml:"name"`
 	Clusters   []Cluster
-	Config     string   `json:"config"`
-	Kubeconfig string   `json:"kubeconfig"`
-	Namespace  string   `json:"namespace"`
-	ExecUsers  []string `json:"exec-users"`
+	Config     string   `yaml:"config"`
+	Kubeconfig string   `yaml:"kubeconfig"`
+	Namespace  string   `yaml:"namespace"`
+	ExecUsers  []string `yaml:"exec-users"`
 }
 
 type Container struct {
-	Name          string `json:"name"`
-	RepositoryURI string `json:"repository-uri"`
+	Name          string `yaml:"name"`
+	RepositoryURI string `yaml:"repository-uri"`
 }
 
 type Cluster struct {
-	Name       string `json:"name"`
-	Kubeconfig string `json:"kubeconfig"`
+	Name       string `yaml:"name"`
+	Kubeconfig string `yaml:"kubeconfig"`
 }
 
 func (c *Config) Load(file string) error {
@@ -54,7 +55,7 @@ func (c *Config) Load(file string) error {
 		return err
 	}
 
-	parser := json.NewDecoder(f)
+	parser := yaml.NewDecoder(f)
 	if err = parser.Decode(&c); err != nil {
 		return err
 	}
