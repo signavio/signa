@@ -10,10 +10,10 @@ import (
 
 const slackActionLogMessage = "User %v on Channel %v executed: %v %v"
 
-func setupLogger() error {
-	f, err := os.OpenFile(cfg.Log, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	logger.NewLogger(ioutil.Discard, f, f, f)
-	return err
+func setupLogger() {
+	// NOTE: Using stdout and stderr for now.
+	//f, err := os.OpenFile(cfg.Log, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logger.NewLogger(ioutil.Discard, os.Stdout, os.Stdout, os.Stderr)
 }
 
 func LogError(err error) {
