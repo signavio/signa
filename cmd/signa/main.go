@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	yaml "gopkg.in/yaml.v2"
@@ -13,10 +14,12 @@ import (
 )
 
 func main() {
-	// NOTE: Add the possibility of use a flag to load the conf
-	// or this way as default.
-	c := loadConfig("/etc/signa.yaml")
-	slack.Run(c["slack-token"].(string))
+	configFile := flag.String(
+		"config", "/etc/signa.yaml", "Path to the configuration file.")
+	flag.Parse()
+
+	c := loadConfig(*configFile)
+	slack.Run(*configFile, c["slack-token"].(string))
 }
 
 func loadConfig(file string) map[string]interface{} {

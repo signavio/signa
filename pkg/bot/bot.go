@@ -30,7 +30,10 @@ type Handler struct {
 }
 
 // New creates a new bot instance
-func New(h *Handler) *Bot {
+func New(configFile string, h *Handler) *Bot {
+	if err := cfg.Load(configFile); err != nil {
+		panic(err)
+	}
 	return &Bot{Handler: h}
 }
 
@@ -81,11 +84,5 @@ func Cfg() *Config {
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-
-	if err := cfg.Load("/etc/signa.yaml"); err != nil {
-		panic(err)
-	}
-	if err := setupLogger(); err != nil {
-		panic(err)
-	}
+	setupLogger()
 }

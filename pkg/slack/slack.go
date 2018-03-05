@@ -95,21 +95,21 @@ func ownMessage(UserID string) bool {
 	return botUserID == UserID
 }
 
-func RunWithFilter(token string, customMessageFilter MessageFilter) {
+func RunWithFilter(configFile, token string, customMessageFilter MessageFilter) {
 	if customMessageFilter == nil {
 		panic("A valid message filter must be provided.")
 	}
 	messageFilter = customMessageFilter
-	Run(token)
+	Run(configFile, token)
 }
 
 // Run connects to slack RTM API using the provided token
-func Run(token string) {
+func Run(configFile, token string) {
 	api = slack.New(token)
 	rtm = api.NewRTM()
 	teaminfo, _ = api.GetTeamInfo()
 
-	b := bot.New(&bot.Handler{
+	b := bot.New(configFile, &bot.Handler{
 		Response: responseHandler,
 	})
 
