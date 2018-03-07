@@ -1,1 +1,3 @@
 releases/
+configmap.yml
+deployment.yml
