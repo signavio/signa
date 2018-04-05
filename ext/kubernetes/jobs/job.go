@@ -1,6 +1,8 @@
 package jobs
 
 import (
+	"crypto/rand"
+	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -153,8 +155,8 @@ func (j *Job) parseImageTag() error {
 		return err
 	}
 
-	parsedCfg := j.Config + ".parsed"
-	f, err := os.Create(parsedCfg)
+	parsedCfgFile := "/tmp/parsed-" + randToken() + ".yaml"
+	f, err := os.Create(parsedCfgFile)
 	if err != nil {
 		return err
 	}
@@ -164,7 +166,13 @@ func (j *Job) parseImageTag() error {
 		return err
 	}
 
-	j.Config = parsedCfg
+	j.Config = parsedCfgFile
 
 	return nil
+}
+
+func randToken() string {
+	b := make([]byte, 8)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }
