@@ -31,7 +31,7 @@ components:
   # containers within the application to be deployed
   containers:
   # container name and image registry
-  - name: app-backend
+  - name: app-backend-container
     repository-uri: image-repository-uri.com/app-backend
   # initial config to be used for the application bootstrap
   bootstrap-config: /path/to/app-backend.yml
@@ -56,7 +56,7 @@ components:
   # containers within the application to be deployed
   containers:
   # container name and image registry
-  - name: app-frontend
+  - name: app-frontend-container
     repository-uri: image-repository-uri.com/app-frontend
   # initial config to be used for the application bootstrap
   bootstrap-config: /path/to/app-frontend.yml
