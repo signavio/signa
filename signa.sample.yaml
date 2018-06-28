@@ -1,0 +1,106 @@
+# The username that will be displayed in Slack
+bot-username: signa
+
+# The slack token necessary to access the Slack API.
+# Please, access https://get.slack.help/hc/en-us/articles/215770388-Create-and-regenerate-API-tokens
+# for further information in how to generate a new token
+slack-token: CHANGE-ME
+
+# The path for logging output
+log: /var/log/signa.log
+
+# Amount of seconds after the deploy to check for issues
+rollback-check: 10
+
+# Username for the superusers that can execute any command
+superusers:
+- superuser1
+- superuser2
+
+# Components that can be deployed
+components:
+# application name
+- name: app-backend
+  # clusters where the app can be deployed
+  clusters:
+  # cluster name and path to the cluster's KUBECONFIG
+  - name: cluster1
+    kubeconfig: /path/to/cluster1-kubeconfig
+  - name: cluster2
+    kubeconfig: /path/to/cluster2-kubeconfig
+  # containers within the application to be deployed
+  containers:
+  # container name and image registry
+  - name: app-backend
+    repository-uri: image-repository-uri.com/app-backend
+  # initial config to be used for the application bootstrap
+  bootstrap-config: /path/to/app-backend.yml
+  # namespace where the deploy will occur
+  namespace: kubernetes-namespace
+  # users that are allowed to execute this deploy
+  exec-users:
+  - user1
+  - user2
+  # alias to the application name
+  alias: backend
+  
+# application name  
+- name: app-frontend
+  # clusters where the app can be deployed
+  clusters:
+  # cluster name and path to the cluster's KUBECONFIG
+  - name: cluster1
+    kubeconfig: /path/to/cluster1-kubeconfig
+  - name: cluster2
+    kubeconfig: /path/to/cluster2-kubeconfig
+  # containers within the application to be deployed
+  containers:
+  # container name and image registry
+  - name: app-frontend
+    repository-uri: image-repository-uri.com/app-frontend
+  # initial config to be used for the application bootstrap
+  bootstrap-config: /path/to/app-frontend.yml
+  # namespace where the deploy will occur
+  namespace: kubernetes-namespace
+  # users that are allowed to execute this deploy
+  exec-users:
+  - user1
+  - user2
+  # alias to the application name
+  alias: frontend
+
+# Kubernetes jobs that can be executed
+jobs:
+# Job name
+- name: make-pizza
+  # cluster name and path to the cluster's KUBECONFIG
+  clusters:
+  - name: cluster1
+    kubeconfig: /path/to/cluster1-kubeconfig
+  - name: cluster2
+    kubeconfig: /path/to/cluster2-kubeconfig
+  # Path to the Kubernetes Job configuration
+  config: /path/to/pizza-job.yml
+  # Namespace where the job execution will occur
+  namespace: kubernetes-namespace
+  # users that are allowed to execute this job
+  exec-users:
+  - user1
+  - user2
+  
+# Job name
+- name: make-hamburger
+  # cluster name and path to the cluster's KUBECONFIG
+  clusters:
+  - name: cluster1
+    kubeconfig: /path/to/cluster1-kubeconfig
+  - name: cluster2
+    kubeconfig: /path/to/cluster2-kubeconfig
+  # Path to the Kubernetes Job configuration
+  config: /path/to/hamburger-job.yml
+  # Namespace where the job execution will occur
+  namespace: kubernetes-namespace
+  # users that are allowed to execute this job
+  exec-users:
+  - user1
+  - user2
