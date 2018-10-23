@@ -13,6 +13,7 @@ type Config struct {
 	SlackToken    string   `yaml:"slack-token"`
 	Log           string   `yaml:"log"`
 	RollbackCheck int      `yaml:"rollback-check"`
+	CircleCIToken string   `yaml:"circleci-token`
 	Superusers    []string `yaml:"superusers"`
 	Components    []Component
 	Jobs          []Job

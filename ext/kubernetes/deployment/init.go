@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/signavio/signa/pkg/bot"
@@ -68,7 +69,7 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 		if err != nil {
 			bot.LogError(err)
 		}
-		initiateDeploymentProcedure(deployment)
+		initiateDeploymentProcedure(deployment, component.Name, cluster.Name)
 	} else {
 		return permissionDenied, nil
 	}
@@ -84,7 +85,7 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 	return <-messageChannel, nil
 }
 
-func initiateDeploymentProcedure(d *Deployment) {
+func initiateDeploymentProcedure(d *Deployment, componentName string, clusterName string) {
 	go func() {
 		rollback, err := d.Apply()
 		if err != nil {
@@ -96,6 +97,27 @@ func initiateDeploymentProcedure(d *Deployment) {
 				deploySuccess,
 				strings.Join(d.GetPods(), " "),
 			)
+			if strings.Contains(componentName, "prod") && strings.Contains(clusterName, "eu") {
+				initiateE2EOnProdEu()
+			}
 		}
 	}()
+}
+
+var initiateE2EOnProdEu = func() ([]byte, error) {
+	cToken := bot.Cfg().CircleCIToken
+	curlPieces := []string{"curl -u ", cToken, ": -d build_parameters[CIRCLE_JOB]=production-build https://circleci.com/api/v1.1/project/github/signavio/pex-e2e-testing/tree/master"}
+	curlRequest := strings.Join(curlPieces, "")
+	outputCircleCI, error := triggerE2EPipeline(curlRequest)
+	return outputCircleCI, error
+}
+
+var triggerE2EPipeline = func(path string) ([]byte, error) {
+
+	cmd := exec.Command("/bin/sh", "-c", path)
+
+	out, error := cmd.Output()
+
+	return out, error
+
 }
