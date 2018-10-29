@@ -10,24 +10,25 @@ var cfg = &Config{}
 
 type Config struct {
 	BotUsername   string   `yaml:"bot-username"`
+	CurlRequest   string   `yaml:"curl-request"`
 	SlackToken    string   `yaml:"slack-token"`
 	Log           string   `yaml:"log"`
 	RollbackCheck int      `yaml:"rollback-check"`
-	CircleCIToken string   `yaml:"circleci-token`
 	Superusers    []string `yaml:"superusers"`
 	Components    []Component
 	Jobs          []Job
 }
 
 type Component struct {
-	Name            string `yaml:"name"`
-	Clusters        []Cluster
-	Containers      []Container
-	BootstrapConfig string   `yaml:"bootstrap-config"`
-	Kubeconfig      string   `yaml:"kubeconfig"`
-	Namespace       string   `yaml:"namespace"`
-	ExecUsers       []string `yaml:"exec-users"`
-	Alias           string   `yaml:"alias"`
+	Name               string `yaml:"name"`
+	Clusters           []Cluster
+	Containers         []Container
+	BootstrapConfig    string             `yaml:"bootstrap-config"`
+	Kubeconfig         string             `yaml:"kubeconfig"`
+	Namespace          string             `yaml:"namespace"`
+	ExecUsers          []string           `yaml:"exec-users"`
+	Alias              string             `yaml:"alias"`
+	PostProductionStep PostProductionStep `yaml:"post-production-step"`
 }
 
 type Job struct {
@@ -47,6 +48,18 @@ type Container struct {
 type Cluster struct {
 	Name       string `yaml:"name"`
 	Kubeconfig string `yaml:"kubeconfig"`
+}
+
+type PostProductionStep struct {
+	Command string `yaml:"command"`
+	Cluster string `yaml:"cluster"`
+}
+
+func (c *Component) HasPostProductionStep() bool {
+	if c.PostProductionStep.Cluster != "" {
+		return true
+	}
+	return false
 }
 
 func (c *Config) Load(file string) error {

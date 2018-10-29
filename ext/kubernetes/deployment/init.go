@@ -23,6 +23,7 @@ const (
 	rollbackExecuted      = "Problems identified during the deployment, the rollback was executed successfully."
 	deploySuccess         = "The deployment was successful! Pods: `%v`."
 	permissionDenied      = "You don't have enough permissions to execute this operation. :sweat_smile:"
+	postDeploymentFailed  = "Something went wrong during the post deployment step. :morty:"
 )
 
 var messageChannel = make(chan string)
@@ -76,10 +77,10 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 
 	// NOTE: This should be moved to the package bot.
 	//logUserAction(
-	//	botCommand.User.Nick,
-	//	botCommand.Channel,
-	//	botCommand.Command,
-	//	botCommand.RawArgs,
+	//  botCommand.User.Nick,
+	//  botCommand.Channel,
+	//  botCommand.Command,
+	//  botCommand.RawArgs,
 	//)
 
 	return <-messageChannel, nil
@@ -97,27 +98,19 @@ func initiateDeploymentProcedure(d *Deployment, componentName string, clusterNam
 				deploySuccess,
 				strings.Join(d.GetPods(), " "),
 			)
-			if strings.Contains(componentName, "prod") && strings.Contains(clusterName, "eu") {
-				initiateE2EOnProdEu()
+			component := bot.Cfg().FindComponent(componentName)
+			if component.HasPostProductionStep() && (clusterName == component.PostProductionStep.Cluster) {
+				_, error := triggerRequest(component.PostProductionStep.Command)
+				if error != nil {
+					messageChannel <- postDeploymentFailed
+				}
 			}
 		}
 	}()
 }
 
-var initiateE2EOnProdEu = func() ([]byte, error) {
-	cToken := bot.Cfg().CircleCIToken
-	curlPieces := []string{"curl -u ", cToken, ": -d build_parameters[CIRCLE_JOB]=production-build https://circleci.com/api/v1.1/project/github/signavio/pex-e2e-testing/tree/master"}
-	curlRequest := strings.Join(curlPieces, "")
-	outputCircleCI, error := triggerE2EPipeline(curlRequest)
-	return outputCircleCI, error
-}
-
-var triggerE2EPipeline = func(path string) ([]byte, error) {
-
-	cmd := exec.Command("/bin/sh", "-c", path)
-
+var triggerRequest = func(request string) ([]byte, error) {
+	cmd := exec.Command("/bin/sh", "-c", request)
 	out, error := cmd.Output()
-
 	return out, error
-
 }
