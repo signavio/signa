@@ -10,7 +10,6 @@ var cfg = &Config{}
 
 type Config struct {
 	BotUsername   string   `yaml:"bot-username"`
-	CurlRequest   string   `yaml:"curl-request"`
 	SlackToken    string   `yaml:"slack-token"`
 	Log           string   `yaml:"log"`
 	RollbackCheck int      `yaml:"rollback-check"`
