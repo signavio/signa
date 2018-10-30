@@ -27,7 +27,7 @@ type Component struct {
 	Namespace          string             `yaml:"namespace"`
 	ExecUsers          []string           `yaml:"exec-users"`
 	Alias              string             `yaml:"alias"`
-	PostProductionStep PostProductionStep `yaml:"post-production-step"`
+	PostDeploymentStep PostDeploymentStep `yaml:"post-deployment-step"`
 }
 
 type Job struct {
@@ -49,13 +49,13 @@ type Cluster struct {
 	Kubeconfig string `yaml:"kubeconfig"`
 }
 
-type PostProductionStep struct {
+type PostDeploymentStep struct {
 	Command string `yaml:"command"`
 	Cluster string `yaml:"cluster"`
 }
 
-func (c *Component) HasPostProductionStep() bool {
-	if c.PostProductionStep.Cluster != "" {
+func (c *Component) HasPostDeploymentStep() bool {
+	if c.PostDeploymentStep.Cluster != "" {
 		return true
 	}
 	return false

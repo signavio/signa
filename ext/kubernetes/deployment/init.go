@@ -98,15 +98,19 @@ func initiateDeploymentProcedure(d *Deployment, componentName string, clusterNam
 				deploySuccess,
 				strings.Join(d.GetPods(), " "),
 			)
-			component := bot.Cfg().FindComponent(componentName)
-			if component.HasPostProductionStep() && (clusterName == component.PostProductionStep.Cluster) {
-				_, error := triggerRequest(component.PostProductionStep.Command)
-				if error != nil {
-					messageChannel <- postDeploymentFailed
-				}
-			}
+			initiatePostDeploymentStep(componentName, clusterName)
 		}
 	}()
+}
+
+var initiatePostDeploymentStep = func(componentName string, clusterName string) {
+	component := bot.Cfg().FindComponent(componentName)
+	if component.HasPostDeploymentStep() && (clusterName == component.PostDeploymentStep.Cluster) {
+		_, error := triggerRequest(component.PostDeploymentStep.Command)
+		if error != nil {
+			messageChannel <- postDeploymentFailed
+		}
+	}
 }
 
 var triggerRequest = func(request string) ([]byte, error) {
