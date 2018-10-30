@@ -19,14 +19,15 @@ type Config struct {
 }
 
 type Component struct {
-	Name            string `yaml:"name"`
-	Clusters        []Cluster
-	Containers      []Container
-	BootstrapConfig string   `yaml:"bootstrap-config"`
-	Kubeconfig      string   `yaml:"kubeconfig"`
-	Namespace       string   `yaml:"namespace"`
-	ExecUsers       []string `yaml:"exec-users"`
-	Alias           string   `yaml:"alias"`
+	Name               string `yaml:"name"`
+	Clusters           []Cluster
+	Containers         []Container
+	BootstrapConfig    string             `yaml:"bootstrap-config"`
+	Kubeconfig         string             `yaml:"kubeconfig"`
+	Namespace          string             `yaml:"namespace"`
+	ExecUsers          []string           `yaml:"exec-users"`
+	Alias              string             `yaml:"alias"`
+	PostDeploymentStep PostDeploymentStep `yaml:"post-deployment-step"`
 }
 
 type Job struct {
@@ -46,6 +47,18 @@ type Container struct {
 type Cluster struct {
 	Name       string `yaml:"name"`
 	Kubeconfig string `yaml:"kubeconfig"`
+}
+
+type PostDeploymentStep struct {
+	Command string `yaml:"command"`
+	Cluster string `yaml:"cluster"`
+}
+
+func (c *Component) HasPostDeploymentStep() bool {
+	if c.PostDeploymentStep.Cluster != "" {
+		return true
+	}
+	return false
 }
 
 func (c *Config) Load(file string) error {

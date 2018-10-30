@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/signavio/signa/pkg/bot"
@@ -22,6 +23,7 @@ const (
 	rollbackExecuted      = "Problems identified during the deployment, the rollback was executed successfully."
 	deploySuccess         = "The deployment was successful! Pods: `%v`."
 	permissionDenied      = "You don't have enough permissions to execute this operation. :sweat_smile:"
+	postDeploymentFailed  = "Something went wrong during the post deployment step. :morty:"
 )
 
 var messageChannel = make(chan string)
@@ -68,23 +70,23 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 		if err != nil {
 			bot.LogError(err)
 		}
-		initiateDeploymentProcedure(deployment)
+		initiateDeploymentProcedure(deployment, component.Name, cluster.Name)
 	} else {
 		return permissionDenied, nil
 	}
 
 	// NOTE: This should be moved to the package bot.
 	//logUserAction(
-	//	botCommand.User.Nick,
-	//	botCommand.Channel,
-	//	botCommand.Command,
-	//	botCommand.RawArgs,
+	//  botCommand.User.Nick,
+	//  botCommand.Channel,
+	//  botCommand.Command,
+	//  botCommand.RawArgs,
 	//)
 
 	return <-messageChannel, nil
 }
 
-func initiateDeploymentProcedure(d *Deployment) {
+func initiateDeploymentProcedure(d *Deployment, componentName string, clusterName string) {
 	go func() {
 		rollback, err := d.Apply()
 		if err != nil {
@@ -96,6 +98,23 @@ func initiateDeploymentProcedure(d *Deployment) {
 				deploySuccess,
 				strings.Join(d.GetPods(), " "),
 			)
+			initiatePostDeploymentStep(componentName, clusterName)
 		}
 	}()
+}
+
+var initiatePostDeploymentStep = func(componentName string, clusterName string) {
+	component := bot.Cfg().FindComponent(componentName)
+	if component.HasPostDeploymentStep() && (clusterName == component.PostDeploymentStep.Cluster) {
+		_, error := triggerRequest(component.PostDeploymentStep.Command)
+		if error != nil {
+			messageChannel <- postDeploymentFailed
+		}
+	}
+}
+
+var triggerRequest = func(request string) ([]byte, error) {
+	cmd := exec.Command("/bin/sh", "-c", request)
+	out, error := cmd.Output()
+	return out, error
 }

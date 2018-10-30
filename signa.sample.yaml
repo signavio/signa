@@ -43,6 +43,10 @@ components:
   - user2
   # alias to the application name
   alias: backend
+  # define shell command to be executed after succesful deployment to specified cluster
+  post-deployment-step:
+    command: shellCommand
+    cluster: cluster1
   
 # application name  
 - name: app-frontend
@@ -104,3 +108,7 @@ jobs:
   exec-users:
   - user1
   - user2
+  # define shell command to be executed after succesful deployment to specified cluster
+  post-deployment-step:
+    command: shellCommand
+    cluster: cluster2
