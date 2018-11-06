@@ -3,6 +3,7 @@ package slack
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/nlopes/slack"
 	"github.com/signavio/signa/pkg/bot"
@@ -105,6 +106,7 @@ func RunWithFilter(configFile, token string, customMessageFilter MessageFilter) 
 
 // Run connects to slack RTM API using the provided token
 func Run(configFile, token string) {
+	log.Print("Start running Slack RTM connection")
 	api = slack.New(token)
 	rtm = api.NewRTM()
 	teaminfo, _ = api.GetTeamInfo()
@@ -114,6 +116,7 @@ func Run(configFile, token string) {
 	})
 
 	go rtm.ManageConnection()
+	log.Print("Waiting for messages now")
 
 Loop:
 	for {
@@ -147,11 +150,17 @@ Loop:
 				}
 
 			case *slack.RTMError:
-				fmt.Printf("Error: %s\n", ev.Error())
+				log.Print("Error: ", ev.Error())
 
 			case *slack.InvalidAuthEvent:
-				fmt.Printf("Invalid credentials")
+				log.Print("Invalid credentials")
 				break Loop
+
+			case *slack.ConnectionErrorEvent:
+				original, ok := msg.Data.(*slack.ConnectionErrorEvent)
+				if ok {
+					log.Print("ConnectionErrorEvent", original.ErrorObj)
+				}
 			}
 		}
 	}
