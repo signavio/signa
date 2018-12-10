@@ -36,7 +36,15 @@ Where `app-backend` stands for the application name, `app-backend-container` for
 
 You can define post deployment steps that enable you to execute a command after a successful deployment, e.g. testing. 
 Also, you can access username, component name and cluster of your deployment within the command with the help of Go's [template package](https://golang.org/pkg/text/template/#Template.DefinedTemplates).
-For instance the username, which could be accesses like this: `curl --foo:{{.Username}}`
+
+The fields you can access are: 
+- `ComponentName`
+- `ClusterName`
+- `Username`
+
+For instance the username can be accesses like this: `curl --foo:{{.Username}}`
+
+
 
 ### kubernetes/get
 
