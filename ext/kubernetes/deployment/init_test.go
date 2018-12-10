@@ -20,9 +20,6 @@ func TestGetPostDeploymentStepCommandSuccessful(t *testing.T) {
 func TestGetPostDeploymentStepCommandUnsuccessful(t *testing.T) {
 	var commandTemplate = "curl"
 	command, _ := addDeploymentInfoToCommand(commandTemplate, "Gryffindor", "Hogwarts", "Harry Potter")
-	if strings.Contains(command, "Harry Potter") {
-		t.Fatal("Deployment info not correctly accessed")
-	}
 	if command != commandTemplate {
 		t.Fatal("Curl command not correctly formmatted. Expected " + commandTemplate + ", got: " + command)
 	}
