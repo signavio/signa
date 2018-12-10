@@ -3,9 +3,9 @@ package deployment
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"os/exec"
 	"strings"
+	"text/template"
 
 	"github.com/signavio/signa/pkg/bot"
 )
