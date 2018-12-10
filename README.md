@@ -32,6 +32,20 @@ Usage example:
 Where `app-backend` stands for the application name, `app-backend-container` for the container name,
 `cluster1` for the cluster name and `v1.0.1` for the desired image tag.
 
+#### Post Deployment Steps
+
+You can define post deployment steps that enable you to execute a command after a successful deployment, e.g. testing. 
+Also, you can access username, component name and cluster of your deployment within the command with the help of Go's [template package](https://golang.org/pkg/text/template/#Template.DefinedTemplates).
+
+The fields you can access are: 
+- `ComponentName`
+- `ClusterName`
+- `Username`
+
+For instance the username can be accesses like this: `curl --foo:{{.Username}}`
+
+
+
 ### kubernetes/get
 
 [kubernetes/get](ext/kubernetes/get) retrieves information of the

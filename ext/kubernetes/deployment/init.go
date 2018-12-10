@@ -1,9 +1,11 @@
 package deployment
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"strings"
+	"text/template"
 
 	"github.com/signavio/signa/pkg/bot"
 )
@@ -70,7 +72,7 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 		if err != nil {
 			bot.LogError(err)
 		}
-		initiateDeploymentProcedure(deployment, component.Name, cluster.Name)
+		initiateDeploymentProcedure(deployment, component.Name, cluster.Name, username)
 	} else {
 		return permissionDenied, nil
 	}
@@ -86,7 +88,7 @@ func Deploy(botCommand *bot.Cmd) (string, error) {
 	return <-messageChannel, nil
 }
 
-func initiateDeploymentProcedure(d *Deployment, componentName string, clusterName string) {
+func initiateDeploymentProcedure(d *Deployment, componentName string, clusterName string, username string) {
 	go func() {
 		rollback, err := d.Apply()
 		if err != nil {
@@ -98,19 +100,44 @@ func initiateDeploymentProcedure(d *Deployment, componentName string, clusterNam
 				deploySuccess,
 				strings.Join(d.GetPods(), " "),
 			)
-			initiatePostDeploymentStep(componentName, clusterName)
+			initiatePostDeploymentStep(componentName, clusterName, username)
 		}
 	}()
 }
 
-var initiatePostDeploymentStep = func(componentName string, clusterName string) {
+var initiatePostDeploymentStep = func(componentName string, clusterName string, username string) {
 	component := bot.Cfg().FindComponent(componentName)
 	if component.HasPostDeploymentStep() && (clusterName == component.PostDeploymentStep.Cluster) {
-		_, error := triggerRequest(component.PostDeploymentStep.Command)
-		if error != nil {
+		var err error
+		command, err := addDeploymentInfoToCommand(component.PostDeploymentStep.Command, componentName, clusterName, username)
+		if err != nil {
+			messageChannel <- postDeploymentFailed
+		}
+		_, err = triggerRequest(command)
+		if err != nil {
 			messageChannel <- postDeploymentFailed
 		}
 	}
+}
+
+var addDeploymentInfoToCommand = func(command string, componentName string, clusterName string, username string) (string, error) {
+	deploymentInfo := struct {
+		Username      string
+		ComponentName string
+		ClusterName   string
+	}{
+		Username:      username,
+		ComponentName: componentName,
+		ClusterName:   clusterName,
+	}
+
+	t, _ := template.New("Command").Parse(command)
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, deploymentInfo); err != nil {
+		return "", err
+	}
+	result := tpl.String()
+	return result, nil
 }
 
 var triggerRequest = func(request string) ([]byte, error) {
