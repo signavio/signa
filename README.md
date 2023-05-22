@@ -1,3 +1,5 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/signavio/signa)](https://api.reuse.software/info/github.com/signavio/signa)
+
 # Signa
 
 Signa is a Slack bot and ChatOps tool written in Go.
